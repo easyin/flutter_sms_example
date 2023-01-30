@@ -1,71 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_sms_example/services/main_screens/**.dart';
 import 'package:flutter_sms_example/services/api_service.dart';
 import 'package:flutter_sms_example/services/permission_services.dart';
 
 import 'model/sms_task_data.dart';
-import 'package:flutter_sms_example/main_screens/screen_library.dart';
 
-void main() {
-  runApp(HomePage());
-}
-
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
-  @override
-  State<StatefulWidget> createState() {return _HomePage();}
-}
-
-class _HomePage extends State<HomePage> {
-  Future<List<SmstaskModel>> smstasks = SmsApiService.getSmsTaskList(1);
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  Future<void> onRefresh() async {
-    smstasks = SmsApiService.getSmsTaskList(1);
-    setState(() { });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.red,
-          leading: IconButton(
-            onPressed: () {  },
-            icon: Icon(Icons.menu),
-          ),
-          actions: [
-            IconButton(
-                onPressed: (){ },
-                icon: Icon(Icons.logout),
-            ),
-            IconButton(
-              onPressed: () {
-                smstasks = SmsApiService.getSmsTaskList(1);
-                setState(() { });
-              },
-              icon: Icon(Icons.refresh),
-            ),
-            TextButton.icon(
-                onPressed: () {smstasks.then((value) => _smsSend(value));},
-                style: TextButton.styleFrom(
-                  iconColor: Colors.white,
-                ),
-                icon: Icon(Icons.send),
-                label:
-                    Text('발송시작', style: TextStyle(color : Colors.white))
-                )
-          ],
-          title: Text('EZSI_SMS'),
-        ),
-
-        body: RefreshIndicator(
+class RefreshIndicator extends Widget(
           onRefresh: onRefresh,
           child: FutureBuilder(
             future: smstasks,
