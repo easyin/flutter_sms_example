@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sms_example/services/api_service.dart';
 import 'package:flutter_sms_example/services/permission_services.dart';
-
-import 'model/sms_task_data.dart';
 import 'package:flutter_sms_example/main_screens/screen_library.dart';
+import 'model/sms_task_data.dart';
 
 void main() {
   runApp(HomePage());
@@ -17,16 +16,22 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePage extends State<HomePage> {
-  Future<List<SmstaskModel>> smstasks = SmsApiService.getSmsTaskList(1);
+  late TaskListViewer _taskListViewer;
+  late Widget _screen;
+
+  _HomePage()
+  {
+    _taskListViewer = TaskListViewer();
+    _screen = _taskListViewer;
+  }
+
+
+  late Future<List<SmstaskModel>> smstasks;
 
   @override
   void initState() {
     super.initState();
-  }
-
-  Future<void> onRefresh() async {
     smstasks = SmsApiService.getSmsTaskList(1);
-    setState(() { });
   }
 
   @override
@@ -65,52 +70,7 @@ class _HomePage extends State<HomePage> {
           title: Text('EZSI_SMS'),
         ),
 
-        body: RefreshIndicator(
-          onRefresh: onRefresh,
-          child: FutureBuilder(
-            future: smstasks,
-            builder: (context, snapshot) {
-              if(snapshot.hasData){
-                var s_data = snapshot.data;
-                return ListView.separated(
-                  scrollDirection: Axis.vertical,
-                  itemCount: s_data == null ? 1 : s_data!.length + 1,
-                  itemBuilder: (context, index) {
-                    if(index == 0)
-                    {
-                      return Row(
-                        children: [
-                          Text("header!"),
-                        ]
-                      );
-                    }
-
-                    index -= 1;
-                    var smstask = s_data![index];
-                    return TextButton(
-                      style: ButtonStyle(
-                          padding: MaterialStateProperty.all(EdgeInsets.all(20))
-                      ),
-                      child: Text(smstask.receivers),
-                      onPressed: () {  },
-                    );
-                  },
-                  separatorBuilder: (context, index) => const Divider(),
-                );
-              }
-
-              else if(snapshot.hasError)
-              {
-                print(snapshot.toString());
-                return Text("Error Occured.");
-              }
-
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            },
-          ),
-        ),
+        body: _screen,
 
         bottomNavigationBar: BottomAppBar(
           height: 50,
