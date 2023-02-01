@@ -6,7 +6,8 @@ class Passport {
       u_date,
       u_auth,
       u_email,
-      u_tel;
+      u_tel,
+      message;
 
   Passport.fromJson(Map<String, dynamic> json) :
     u_code = json['u_code'],
@@ -16,5 +17,6 @@ class Passport {
     u_date = json['u_date'],
     u_auth = json['u_auth'],
     u_email = json['u_email'],
-    u_tel = json['u_tel'];
+    u_tel = json['u_tel'],
+    message = json['message'];
   }

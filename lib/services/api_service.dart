@@ -5,7 +5,7 @@ import 'package:flutter_sms_example/model/sms_task_data.dart';
 import 'package:http/http.dart' as http;
 
 class SmsApiService{
-  static const String baseUrl = "https://dev.xn--car-2r7mh0wi12a.com/permitAll/sms";
+  static const String baseUrl = "https://easy.xn--car-2r7mh0wi12a.com/permitAll/sms";
 
   static Future<List<SmstaskModel>> getSmsTaskList(usercode) async{
     List<SmstaskModel> taskInstances = [];

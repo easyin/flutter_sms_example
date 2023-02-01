@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_sms_example/main_screens/login.dart';
 import 'package:flutter_sms_example/services/api_service.dart';
 import 'package:flutter_sms_example/model/sms_task_data.dart';
 
@@ -17,6 +19,14 @@ class _TLS extends State<TaskListViewer> {
     // setState(() { });
   }
 
+  static final storage = FlutterSecureStorage();
+
+  void logout(context)
+  {
+    storage.delete(key: "passport");
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> LoginView()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,7 +38,7 @@ class _TLS extends State<TaskListViewer> {
           ),
           actions: [
             IconButton(
-              onPressed: (){ Navigator.pop(context);},
+              onPressed: (){ logout(context);},
               icon: Icon(Icons.logout),
             ),
             IconButton(
