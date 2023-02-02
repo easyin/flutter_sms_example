@@ -73,7 +73,7 @@ class LoginView extends StatelessWidget {
 
                     else
                     {
-                      FlutterDialog(context, "로그인실패", "아이디, 비밀번호를 체크해주세요");
+                      FlutterDialog(context, "로그인실패", "아이디, 비밀번호를 체크해주세요", false);
                       print(value.message);
                     }
                   });

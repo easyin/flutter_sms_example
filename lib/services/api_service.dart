@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_sms/flutter_sms.dart';
 import 'package:flutter_sms_example/model/sms_task_data.dart';
 import 'package:flutter_sms_example/services/http_fetching_service.dart';
@@ -10,14 +11,19 @@ import 'package:http/http.dart' as http;
 
 class SmsApiService{
   static const String baseUrl = "https://easy.xn--car-2r7mh0wi12a.com/permitAll/sms";
+  static const storage = FlutterSecureStorage();
 
   static Future<String> getCustomersTel(String customerCodeList) async{
     Map<String, dynamic> params = {};
     params["customerList"] = customerCodeList;
-    Future<String> resultString = (await EZFetch().setMethod("POST")
-                                      .setUrl("/permitAll/sms/get/customerstel")
+    params["sk"] = "24389hwofivg2478hogewfb";
+
+    print(params);
+
+    final resultString = await EZFetch().setMethod("post")
+                                      .setUrl("https://dev.xn--car-2r7mh0wi12a.com/permitAll/sms/get/customerstel")
                                       .setParam(params)
-                                      .send()) as Future<String>;
+                                      .send();
 
     return resultString;
   }
@@ -46,9 +52,11 @@ class SmsApiService{
   }
 
 
-  static void sendingSMS(String message, List<String> allNumbers) async {
+  static Future<bool> sendingSMS(String message, List<String> allNumbers) async {
       const oneshotLength = 20;
-      const delaySeconds = 40;
+      const delaySeconds = 3;
+
+      var sendedlist = <String>[];
       var tmplist = <String>[];
 
       doSending(recipients) async{
@@ -60,12 +68,22 @@ class SmsApiService{
 
       for(var i=0; i<allNumbers.length; i+=oneshotLength)
       {
+        int remaincoins = int.parse(await storage.read(key: "coin") as String);
         var maxTo = allNumbers.length;
-        tmplist = allNumbers.getRange(i, min(maxTo, i+oneshotLength)).toList();
+        var to = min(maxTo, i+oneshotLength);
+        to = min(to,i+remaincoins);
+
+        tmplist = allNumbers.getRange(i, to).toList();
         print(tmplist);
 
-        await doSending(tmplist).then((value) => null).then((value) => sleep(Duration(seconds: delaySeconds)));
+        await doSending(tmplist).then((value) => null).then((value) => {sleep(Duration(seconds: delaySeconds))});
+        sendedlist.addAll(tmplist);
+        storage.write(key: "coin", value: (remaincoins - (to-i)).toString());
+
         print("rerun!..");
+        print("remaincoin: " + (remaincoins - (to-i)).toString());
       }
+
+      return true;
   }
 }
