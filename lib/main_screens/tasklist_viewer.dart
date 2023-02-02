@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_sms_example/main_screens/login.dart';
 import 'package:flutter_sms_example/services/api_service.dart';
 import 'package:flutter_sms_example/model/sms_task_data.dart';
+import 'package:flutter_sms_example/services/http_fetching_service.dart';
 
 import '../services/permission_services.dart';
 
@@ -123,12 +124,12 @@ class _TLS extends State<TaskListViewer> {
     );
   }
 
-  void _smsSend(smstasks)
-  {
+  void _smsSend(smstasks) async {
     getSMSPermission();
 
     for(var smstask in smstasks) {
       var recipients = smstask.receivers.toString();
+      await getCustomersTel(recipients).then;
       SmsApiService.sendingSMS(smstask.msg, recipients.split(";"));
     }
   }
