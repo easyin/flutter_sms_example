@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -6,7 +7,7 @@ import 'package:flutter_sms_example/main_screens/login.dart';
 import 'package:flutter_sms_example/model/passport.dart';
 import 'package:flutter_sms_example/services/api_service.dart';
 import 'package:flutter_sms_example/model/sms_task_data.dart';
-import 'package:flutter_sms_example/services/http_fetching_service.dart';
+import 'package:flutter_sms_example/services/show_confirm.dart';
 import 'package:flutter_sms_example/services/show_dialog.dart';
 
 import '../services/permission_services.dart';
@@ -68,7 +69,7 @@ class _TLS extends State<TaskListViewer> {
             ),
             TextButton.icon(
                 onPressed: () {
-                  smstasks!.then((value) => _smsSend(value, context));
+                  smstasks!.then((value) => {_smsSend(value, context)});
                 },
                 style: TextButton.styleFrom(
                   iconColor: Colors.white,
@@ -78,7 +79,7 @@ class _TLS extends State<TaskListViewer> {
                 Text('발송시작', style: TextStyle(color : Colors.white))
             )
           ],
-          title: Text('EZSI_SMS'),
+          title: Text('문자관리자'),
         ),
 
         body: RefreshIndicator(
@@ -94,16 +95,39 @@ class _TLS extends State<TaskListViewer> {
                   itemBuilder: (context, index) {
                     if(index == 0)
                     {
+                      if(s_data!.length == 0)
+                      {
+                        return Center(
+                            heightFactor: 15,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text("불러올 목록이 없습니다.", style: TextStyle(color: Colors.black38, fontSize: 20),),
+                              Text("EASY-SI에서 고객을 추가해주세요.", style: TextStyle(color: Colors.black38, fontSize: 20),),
+                            ],
+                          )
+                        );
+                      }
+
                       return Container(
                           padding: EdgeInsets.all(20),
-                          child: Text("${userinfo!.u_name}님의 발송 대기 목록입니다.", style: commonText,),
+                          child:
+                          Column(
+                            children: [
+                              Text("${userinfo!.u_name}님의 발송 대기 목록입니다.", style: commonText,),
+                              Text("꾹~ 눌러 삭제할 수 있습니다.", style: commonText,),
+                            ],
+                          )
                       );
                     }
 
                     index -= 1;
                     var smstask = s_data![index];
                     return ElevatedButton(
-                      onLongPress: () { },
+                      onLongPress: () {
+                        FlutterConfirm(context, "정말 삭제하시겠습니까?", "이 작업은 취소할 수 없습니다.", (){SmsApiService.removeSmsTask(smstask.no).then((value) => Navigator.pop(context)).whenComplete(() => onRefresh());});
+                      },
                       style: ButtonStyle(
                         padding: MaterialStateProperty.all(EdgeInsets.all(20)),
                       ),
@@ -162,25 +186,42 @@ class _TLS extends State<TaskListViewer> {
         );
   }
 
-  void _smsSend(smstasks, context) async {
+  Future<bool> _smsSend(smstasks, context) async {
     getSMSPermission();
     var coin = 0;
 
-    void _dosomething() async
+    Future<void> dosomething() async
     {
-      FlutterDialog(context, "전송중", "전송을 시작합니다. 절대 어플을 끄지마세요!", true);
+      if(smstasks.length > 0)
+      {
+        for(var smstask in smstasks) {
+          FlutterDialog(context, "전송중", "전송을 시작합니다. 절대 어플을 끄지마세요!", true);
 
-      for(var smstask in smstasks) {
-        var recipients = smstask.receivers.toString();
-        await SmsApiService.getCustomersTel(recipients)
-            .then((value) => {SmsApiService.sendingSMS(smstask.msg, value.split(";"))
-            .whenComplete(() => setState((){Navigator.pop(context);}))});
+          var recipients = smstask.receivers.toString();
+
+          await SmsApiService.sendingSMS(smstask, recipients)
+                  .whenComplete(() => Navigator.pop(context))
+                  .then((value) => SmsApiService.setSendFlag(smstask.no).then((value) => onRefresh()));
+
+        }
+      }else{
+
+        FlutterDialog(context, "전송실패", "발송할 대상을 찾지 못했습니다.", false);
       }
     }
 
-    storage.read(key: "coin")
+
+    void sendingfunction()
+    {
+      if(coin > 0){dosomething();}
+      else{FlutterDialog(context, "문자 발송 실패!", "잔여 발송 코인이 없습니다. 더 이상 발송하면 통신사 패널티 받을 수 있으니 주의하세요!", false);}
+    }
+
+    await storage.read(key: "coin")
         .then((value) => coin = int.parse(value.toString()))
-        .whenComplete(() => {if(coin > 0){ _dosomething()}});
+        .whenComplete(() => sendingfunction());
+
+    return true;
   }
 }
 
