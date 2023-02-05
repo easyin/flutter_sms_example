@@ -179,10 +179,10 @@ class SmsApiService{
 
         void doSendingToServer()
         {
-          EZFetch().setMethod("POST")
-              .setUrl()
-              .setParam()
-              .send();
+          // EZFetch().setMethod("POST")
+          //     .setUrl()
+          //     .setParam()
+          //     .send();
         }
 
         if(AsubB.isNotEmpty) {

@@ -22,7 +22,7 @@ class HomePage extends StatelessWidget {
       if (today_baked == null || today_baked != today)
       {
         storage.write(key: "date", value: DateTime.now().day.toString());
-        storage.write(key: "coin", value: 2.toString());
+        storage.write(key: "coin", value: 100.toString());
       }
     }
 
